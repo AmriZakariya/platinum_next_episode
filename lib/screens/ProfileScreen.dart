@@ -1,25 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:platinum_next_episode/providers/UserProfileProvider.dart';
+import 'package:platinum_next_episode/constants/app_theme.dart';
+import 'package:platinum_next_episode/providers/user_profile_provider.dart';
+import 'package:platinum_next_episode/screens/MainShell.dart';
 import 'package:provider/provider.dart';
 
-class AppColors {
-  static const bg = Color(0xFF0A0A0F);
-  static const surface = Color(0xFF13131A);
-  static const surfaceElevated = Color(0xFF1C1C27);
-  static const accent = Color(0xFFE63946);
-  static const accentSoft = Color(0x33E63946);
-  static const gold = Color(0xFFFFB703);
-  static const goldSoft = Color(0x33FFB703);
-  static const purple = Color(0xFF6C3DD8);
-  static const purpleSoft = Color(0x336C3DD8);
-  static const green = Color(0xFF06D6A0);
-  static const greenSoft = Color(0x2206D6A0);
-  static const textPrimary = Color(0xFFF1F1F5);
-  static const textSecondary = Color(0xFF8A8A9A);
-  static const divider = Color(0xFF2A2A38);
-}
-
+// ─────────────────────────────────────────────
+//  PROFILE SCREEN
+// ─────────────────────────────────────────────
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({Key? key}) : super(key: key);
 
@@ -32,39 +20,34 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.bg,
       body: Consumer<UserProfileProvider>(
-        builder: (context, profile, _) {
-          return CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverToBoxAdapter(child: _buildHeader(context, profile)),
-              SliverToBoxAdapter(child: _buildPointsCard(context, profile)),
-              SliverToBoxAdapter(child: _buildEarnSection(context, profile)),
-              SliverToBoxAdapter(child: _buildStoreSection(context, profile)),
-              SliverToBoxAdapter(child: _buildStatsRow(profile)),
-              SliverToBoxAdapter(child: _buildSettingsSection(context, profile)),
-              SliverToBoxAdapter(child: SizedBox(height: MediaQuery.of(context).padding.bottom + 32)),
-            ],
-          );
-        },
+        builder: (context, profile, _) => CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _buildHeader(context, profile)),
+            SliverToBoxAdapter(child: _buildPointsCard(context, profile)),
+            SliverToBoxAdapter(child: _buildEarnSection(context, profile)),
+            SliverToBoxAdapter(child: _buildStoreSection(context, profile)),
+            SliverToBoxAdapter(child: _buildStatsRow(profile)),
+            SliverToBoxAdapter(child: _buildSettingsSection(context, profile)),
+            SliverToBoxAdapter(child: SizedBox(height: MediaQuery.of(context).padding.bottom + 32)),
+          ],
+        ),
       ),
     );
   }
 
+  // ── Header ────────────────────────────────
   Widget _buildHeader(BuildContext context, UserProfileProvider profile) {
     return Stack(
       children: [
         Container(
           height: 220,
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF1A0533), Color(0xFF0A0A0F)],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
+            gradient: LinearGradient(colors: [Color(0xFF1A0533), Color(0xFF0A0A0F)], begin: Alignment.topCenter, end: Alignment.bottomCenter),
           ),
         ),
         Positioned(top: -40, right: -40, child: _circle(200, AppColors.purple, 0.1)),
-        Positioned(top: 20, left: -60, child: _circle(160, AppColors.accent, 0.07)),
+        Positioned(top: 20,  left: -60, child: _circle(160, AppColors.accent,  0.07)),
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
@@ -72,7 +55,8 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    _iconBtn(Icons.arrow_back_ios_new_rounded, () => Navigator.pop(context)),
+                    // Back → Home tab (no push/pop, just tab switch)
+                    _iconBtn(Icons.arrow_back_ios_new_rounded, () => MainShell.of(context).jumpToTab(0)),
                     const Spacer(),
                     if (profile.isPremium) _premiumBadge(),
                     const SizedBox(width: 10),
@@ -93,10 +77,9 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           child: const Center(child: Text('JD', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w800))),
                         ),
-                        Positioned(bottom: 0, right: 0,
-                          child: Container(width: 22, height: 22,
-                            decoration: BoxDecoration(color: AppColors.green, shape: BoxShape.circle, border: Border.all(color: AppColors.bg, width: 2)),
-                          ),
+                        Positioned(
+                          bottom: 0, right: 0,
+                          child: Container(width: 22, height: 22, decoration: BoxDecoration(color: AppColors.green, shape: BoxShape.circle, border: Border.all(color: AppColors.bg, width: 2))),
                         ),
                       ],
                     ),
@@ -109,13 +92,11 @@ class ProfileScreen extends StatelessWidget {
                           const SizedBox(height: 4),
                           const Text('john.doe@email.com', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
                           const SizedBox(height: 8),
-                          Row(
-                            children: [
-                              _miniStat('${profile.watchHistory.length}', 'Watched'),
-                              const SizedBox(width: 16),
-                              _miniStat('${profile.totalPointsEarned}', 'Earned'),
-                            ],
-                          ),
+                          Row(children: [
+                            _miniStat('${profile.watchHistory.length}', 'Watched'),
+                            const SizedBox(width: 16),
+                            _miniStat('${profile.totalPointsEarned}', 'Earned'),
+                          ]),
                         ],
                       ),
                     ),
@@ -145,17 +126,12 @@ class ProfileScreen extends StatelessWidget {
 
   Widget _premiumBadge() => Container(
     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-    decoration: BoxDecoration(
-      gradient: const LinearGradient(colors: [AppColors.purple, AppColors.accent]),
-      borderRadius: BorderRadius.circular(20),
-    ),
-    child: const Row(
-      children: [
-        Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 14),
-        SizedBox(width: 5),
-        Text('PREMIUM', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
-      ],
-    ),
+    decoration: BoxDecoration(gradient: const LinearGradient(colors: [AppColors.purple, AppColors.accent]), borderRadius: BorderRadius.circular(20)),
+    child: const Row(children: [
+      Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 14),
+      SizedBox(width: 5),
+      Text('PREMIUM', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+    ]),
   );
 
   Widget _miniStat(String value, String label) => Column(
@@ -166,6 +142,7 @@ class ProfileScreen extends StatelessWidget {
     ],
   );
 
+  // ── Points card ───────────────────────────
   Widget _buildPointsCard(BuildContext context, UserProfileProvider profile) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -183,17 +160,11 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 36, height: 36,
-                        decoration: const BoxDecoration(color: AppColors.goldSoft, shape: BoxShape.circle),
-                        child: const Icon(Icons.bolt_rounded, color: AppColors.gold, size: 20),
-                      ),
-                      const SizedBox(width: 10),
-                      const Text('Your Balance', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
-                    ],
-                  ),
+                  Row(children: [
+                    Container(width: 36, height: 36, decoration: const BoxDecoration(color: AppColors.goldSoft, shape: BoxShape.circle), child: const Icon(Icons.bolt_rounded, color: AppColors.gold, size: 20)),
+                    const SizedBox(width: 10),
+                    const Text('Your Balance', style: TextStyle(color: AppColors.textSecondary, fontSize: 13)),
+                  ]),
                   const SizedBox(height: 12),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -237,6 +208,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  // ── Earn section ──────────────────────────
   Widget _buildEarnSection(BuildContext context, UserProfileProvider profile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,55 +216,26 @@ class ProfileScreen extends StatelessWidget {
         _sectionHeader('Earn Points'),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            children: [
-              _EarnCard(
-                icon: Icons.ondemand_video_rounded,
-                iconColor: AppColors.accent,
-                bgColor: AppColors.accentSoft,
-                title: 'Watch a Short Ad',
-                subtitle: profile.canWatchAd
-                    ? 'Tap to earn 1 point instantly'
-                    : profile.dailyAdLimitReached
-                    ? 'Daily limit reached — come back tomorrow'
-                    : 'Loading ad...',
-                badge: '+1 pt',
-                badgeColor: AppColors.accent,
-                isEnabled: profile.canWatchAd,
-                isLoading: profile.isAdLoading,
-                onTap: () => _onWatchAd(context, profile),
-              ),
-              const SizedBox(height: 10),
-              _EarnCard(
-                icon: Icons.calendar_today_rounded,
-                iconColor: AppColors.green,
-                bgColor: AppColors.greenSoft,
-                title: 'Daily Check-In',
-                subtitle: 'Claim 2 free points every day',
-                badge: '+2 pts',
-                badgeColor: AppColors.green,
-                isEnabled: true,
-                onTap: () {},
-              ),
-              const SizedBox(height: 10),
-              _EarnCard(
-                icon: Icons.group_add_rounded,
-                iconColor: AppColors.purple,
-                bgColor: AppColors.purpleSoft,
-                title: 'Invite a Friend',
-                subtitle: 'Both of you get 5 bonus points',
-                badge: '+5 pts',
-                badgeColor: AppColors.purple,
-                isEnabled: true,
-                onTap: () {},
-              ),
-            ],
-          ),
+          child: Column(children: [
+            _EarnCard(
+              icon: Icons.ondemand_video_rounded, iconColor: AppColors.accent, bgColor: AppColors.accentSoft,
+              title: 'Watch a Short Ad',
+              subtitle: profile.canWatchAd ? 'Tap to earn 1 point instantly' : profile.dailyAdLimitReached ? 'Daily limit reached — come back tomorrow' : 'Loading ad...',
+              badge: '+1 pt', badgeColor: AppColors.accent,
+              isEnabled: profile.canWatchAd, isLoading: profile.isAdLoading,
+              onTap: () => _onWatchAd(context, profile),
+            ),
+            const SizedBox(height: 10),
+            _EarnCard(icon: Icons.calendar_today_rounded, iconColor: AppColors.green, bgColor: AppColors.greenSoft, title: 'Daily Check-In', subtitle: 'Claim 2 free points every day', badge: '+2 pts', badgeColor: AppColors.green, isEnabled: true, onTap: () {}),
+            const SizedBox(height: 10),
+            _EarnCard(icon: Icons.group_add_rounded, iconColor: AppColors.purple, bgColor: AppColors.purpleSoft, title: 'Invite a Friend', subtitle: 'Both of you get 5 bonus points', badge: '+5 pts', badgeColor: AppColors.purple, isEnabled: true, onTap: () {}),
+          ]),
         ),
       ],
     );
   }
 
+  // ── Store section ─────────────────────────
   Widget _buildStoreSection(BuildContext context, UserProfileProvider profile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,31 +265,20 @@ class ProfileScreen extends StatelessWidget {
                   gradient: const LinearGradient(colors: [Color(0xFF1A0533), Color(0xFF0D0020)], begin: Alignment.topLeft, end: Alignment.bottomRight),
                   border: Border.all(color: AppColors.purple.withOpacity(0.4)),
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 52, height: 52,
-                      decoration: BoxDecoration(gradient: const LinearGradient(colors: [AppColors.purple, AppColors.accent]), borderRadius: BorderRadius.circular(14)),
-                      child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 26),
-                    ),
-                    const SizedBox(width: 14),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Go Premium', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
-                          SizedBox(height: 3),
-                          Text('Unlimited episodes · No ads · \$4.99/mo', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(gradient: const LinearGradient(colors: [AppColors.purple, AppColors.accent]), borderRadius: BorderRadius.circular(10)),
-                      child: const Text('Upgrade', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
-                    ),
-                  ],
-                ),
+                child: Row(children: [
+                  Container(width: 52, height: 52, decoration: BoxDecoration(gradient: const LinearGradient(colors: [AppColors.purple, AppColors.accent]), borderRadius: BorderRadius.circular(14)), child: const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 26)),
+                  const SizedBox(width: 14),
+                  const Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('Go Premium', style: TextStyle(color: AppColors.textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
+                    SizedBox(height: 3),
+                    Text(r'Unlimited episodes · No ads · $4.99/mo', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+                  ])),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(gradient: const LinearGradient(colors: [AppColors.purple, AppColors.accent]), borderRadius: BorderRadius.circular(10)),
+                    child: const Text('Upgrade', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
+                  ),
+                ]),
               ),
             ),
           ),
@@ -355,21 +287,21 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  // ── Stats row ─────────────────────────────
   Widget _buildStatsRow(UserProfileProvider profile) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
-      child: Row(
-        children: [
-          _StatTile(icon: Icons.bolt_rounded, iconColor: AppColors.gold, bgColor: AppColors.goldSoft, label: 'Total Earned', value: '${profile.totalPointsEarned} pts'),
-          const SizedBox(width: 10),
-          _StatTile(icon: Icons.play_circle_outline_rounded, iconColor: AppColors.accent, bgColor: AppColors.accentSoft, label: 'Episodes', value: '${profile.watchHistory.length}'),
-          const SizedBox(width: 10),
-          _StatTile(icon: Icons.ondemand_video_rounded, iconColor: AppColors.textSecondary, bgColor: AppColors.surfaceElevated, label: 'Ads Today', value: '${profile.adsWatchedToday}/${UserProfileProvider.kMaxAdsPerDay}'),
-        ],
-      ),
+      child: Row(children: [
+        _StatTile(icon: Icons.bolt_rounded,             iconColor: AppColors.gold,          bgColor: AppColors.goldSoft,         label: 'Total Earned', value: '${profile.totalPointsEarned} pts'),
+        const SizedBox(width: 10),
+        _StatTile(icon: Icons.play_circle_outline_rounded, iconColor: AppColors.accent,     bgColor: AppColors.accentSoft,       label: 'Episodes',     value: '${profile.watchHistory.length}'),
+        const SizedBox(width: 10),
+        _StatTile(icon: Icons.ondemand_video_rounded,   iconColor: AppColors.textSecondary, bgColor: AppColors.surfaceElevated,  label: 'Ads Today',    value: '${profile.adsWatchedToday}/${UserProfileProvider.kMaxAdsPerDay}'),
+      ]),
     );
   }
 
+  // ── Settings ──────────────────────────────
   Widget _buildSettingsSection(BuildContext context, UserProfileProvider profile) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -379,47 +311,41 @@ class ProfileScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Container(
             decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.divider)),
-            child: Column(
-              children: [
-                _SettingsRow(icon: Icons.history_rounded, label: 'Watch History', onTap: () {}),
-                const Divider(color: AppColors.divider, height: 1, indent: 56),
-                _SettingsRow(icon: Icons.notifications_none_rounded, label: 'Notifications', onTap: () {}),
-                const Divider(color: AppColors.divider, height: 1, indent: 56),
-                _SettingsRow(icon: Icons.privacy_tip_outlined, label: 'Privacy Policy', onTap: () {}),
-                const Divider(color: AppColors.divider, height: 1, indent: 56),
-                _SettingsRow(icon: Icons.help_outline_rounded, label: 'Help & Support', onTap: () {}),
-                const Divider(color: AppColors.divider, height: 1, indent: 56),
-                _SettingsRow(icon: Icons.logout_rounded, label: 'Sign Out', labelColor: AppColors.accent, iconColor: AppColors.accent, showChevron: false, onTap: () => _showSignOutDialog(context)),
-              ],
-            ),
+            child: Column(children: [
+              _SettingsRow(icon: Icons.history_rounded,               label: 'Watch History',   onTap: () {}),
+              const Divider(color: AppColors.divider, height: 1, indent: 56),
+              _SettingsRow(icon: Icons.notifications_none_rounded,    label: 'Notifications',   onTap: () {}),
+              const Divider(color: AppColors.divider, height: 1, indent: 56),
+              _SettingsRow(icon: Icons.privacy_tip_outlined,          label: 'Privacy Policy',  onTap: () {}),
+              const Divider(color: AppColors.divider, height: 1, indent: 56),
+              _SettingsRow(icon: Icons.help_outline_rounded,          label: 'Help & Support',  onTap: () {}),
+              const Divider(color: AppColors.divider, height: 1, indent: 56),
+              _SettingsRow(icon: Icons.logout_rounded, label: 'Sign Out', labelColor: AppColors.accent, iconColor: AppColors.accent, showChevron: false, onTap: () => _showSignOutDialog(context)),
+            ]),
           ),
         ),
       ],
     );
   }
 
-  Widget _sectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 28, 20, 14),
-      child: Row(
-        children: [
-          Container(width: 3, height: 18, decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(2))),
-          const SizedBox(width: 10),
-          Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w700)),
-        ],
-      ),
-    );
-  }
+  Widget _sectionHeader(String title) => Padding(
+    padding: const EdgeInsets.fromLTRB(20, 28, 20, 14),
+    child: Row(children: [
+      Container(width: 3, height: 18, decoration: BoxDecoration(color: AppColors.accent, borderRadius: BorderRadius.circular(2))),
+      const SizedBox(width: 10),
+      Text(title, style: const TextStyle(color: AppColors.textPrimary, fontSize: 17, fontWeight: FontWeight.w700)),
+    ]),
+  );
 
   Future<void> _onWatchAd(BuildContext context, UserProfileProvider profile) async {
     final result = await profile.watchAdForPoints();
     if (!context.mounted) return;
     final msgs = {
-      AdWatchResult.success: ('🎉 +1 Point earned!', AppColors.green),
-      AdWatchResult.skipped: ('Ad skipped — no points awarded.', AppColors.textSecondary),
-      AdWatchResult.notReady: ('Ad not ready yet. Try again shortly.', AppColors.textSecondary),
-      AdWatchResult.dailyLimitReached: ('Daily limit reached. Come back tomorrow!', AppColors.gold),
-      AdWatchResult.premiumUser: ('You have unlimited access!', AppColors.purple),
+      AdWatchResult.success:           ('🎉 +1 Point earned!',                        AppColors.green),
+      AdWatchResult.skipped:           ('Ad skipped — no points awarded.',            AppColors.textSecondary),
+      AdWatchResult.notReady:          ('Ad not ready yet. Try again shortly.',       AppColors.textSecondary),
+      AdWatchResult.dailyLimitReached: ('Daily limit reached. Come back tomorrow!',  AppColors.gold),
+      AdWatchResult.premiumUser:       ('You have unlimited access!',                 AppColors.purple),
     };
     final (msg, color) = msgs[result]!;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
@@ -442,130 +368,118 @@ class ProfileScreen extends StatelessWidget {
         content: const Text('Are you sure you want to sign out?', style: TextStyle(color: AppColors.textSecondary)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel', style: TextStyle(color: AppColors.textSecondary))),
-          TextButton(onPressed: () { Navigator.pop(context); }, child: const Text('Sign Out', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w700))),
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Sign Out', style: TextStyle(color: AppColors.accent, fontWeight: FontWeight.w700))),
         ],
       ),
     );
   }
 }
 
+// ─────────────────────────────────────────────
+//  EARN CARD
+// ─────────────────────────────────────────────
 class _EarnCard extends StatelessWidget {
   final IconData icon;
   final Color iconColor, bgColor, badgeColor;
   final String title, subtitle, badge;
   final bool isEnabled, isLoading;
   final VoidCallback onTap;
-
-  const _EarnCard({
-    required this.icon, required this.iconColor, required this.bgColor,
-    required this.title, required this.subtitle, required this.badge,
-    required this.badgeColor, required this.isEnabled, required this.onTap,
-    this.isLoading = false,
-  });
+  const _EarnCard({required this.icon, required this.iconColor, required this.bgColor, required this.title, required this.subtitle, required this.badge, required this.badgeColor, required this.isEnabled, required this.onTap, this.isLoading = false});
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: isEnabled ? onTap : null,
-      child: AnimatedOpacity(
-        opacity: isEnabled ? 1.0 : 0.5,
-        duration: const Duration(milliseconds: 200),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.surfaceElevated,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isEnabled ? badgeColor.withOpacity(0.25) : AppColors.divider),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 46, height: 46,
-                decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12)),
-                child: isLoading
-                    ? const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accent)))
-                    : Icon(icon, color: iconColor, size: 22),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
-                    const SizedBox(height: 3),
-                    Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(color: badgeColor.withOpacity(0.15), borderRadius: BorderRadius.circular(10), border: Border.all(color: badgeColor.withOpacity(0.35))),
-                child: Text(badge, style: TextStyle(color: badgeColor, fontSize: 12, fontWeight: FontWeight.w800)),
-              ),
-            ],
-          ),
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: isEnabled ? onTap : null,
+    child: AnimatedOpacity(
+      opacity: isEnabled ? 1.0 : 0.5,
+      duration: const Duration(milliseconds: 200),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: isEnabled ? badgeColor.withOpacity(0.25) : AppColors.divider),
         ),
+        child: Row(children: [
+          Container(
+            width: 46, height: 46,
+            decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(12)),
+            child: isLoading
+                ? const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.accent)))
+                : Icon(icon, color: iconColor, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: const TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w700, fontSize: 14)),
+            const SizedBox(height: 3),
+            Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+          ])),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(color: badgeColor.withOpacity(0.15), borderRadius: BorderRadius.circular(10), border: Border.all(color: badgeColor.withOpacity(0.35))),
+            child: Text(badge, style: TextStyle(color: badgeColor, fontSize: 12, fontWeight: FontWeight.w800)),
+          ),
+        ]),
       ),
-    );
-  }
+    ),
+  );
 }
 
+// ─────────────────────────────────────────────
+//  POINTS PACKAGE CARD
+// ─────────────────────────────────────────────
 class _PointsPackageCard extends StatelessWidget {
   final PointsPackage package;
   const _PointsPackageCard({required this.package});
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {},
-      child: Container(
-        width: 140,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surfaceElevated,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: package.isBestValue ? AppColors.gold.withOpacity(0.5) : AppColors.divider, width: package.isBestValue ? 1.5 : 1),
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  width: 40, height: 40,
-                  decoration: BoxDecoration(color: AppColors.goldSoft, borderRadius: BorderRadius.circular(10)),
-                  child: const Icon(Icons.bolt_rounded, color: AppColors.gold, size: 22),
-                ),
-                const SizedBox(height: 12),
-                Text('${package.points}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 28, fontWeight: FontWeight.w900, height: 1)),
-                const Text('points', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
-                const SizedBox(height: 10),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: BoxDecoration(color: package.isBestValue ? AppColors.gold : AppColors.accent, borderRadius: BorderRadius.circular(10)),
-                  child: Text(package.price, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800)),
-                ),
-              ],
-            ),
-            if (package.isBestValue)
-              Positioned(
-                top: -20, right: -8,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.circular(8)),
-                  child: const Text('BEST', style: TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
-                ),
-              ),
-          ],
-        ),
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: () {},
+    child: Container(
+      width: 140,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: package.isBestValue ? AppColors.gold.withOpacity(0.5) : AppColors.divider, width: package.isBestValue ? 1.5 : 1),
       ),
-    );
-  }
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(width: 40, height: 40, decoration: BoxDecoration(color: AppColors.goldSoft, borderRadius: BorderRadius.circular(10)), child: const Icon(Icons.bolt_rounded, color: AppColors.gold, size: 22)),
+              const SizedBox(height: 12),
+              Text('${package.points}', style: const TextStyle(color: AppColors.textPrimary, fontSize: 28, fontWeight: FontWeight.w900, height: 1)),
+              const Text('points', style: TextStyle(color: AppColors.textSecondary, fontSize: 12)),
+              const SizedBox(height: 10),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(color: package.isBestValue ? AppColors.gold : AppColors.accent, borderRadius: BorderRadius.circular(10)),
+                child: Text(package.price, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800)),
+              ),
+            ],
+          ),
+          if (package.isBestValue)
+            Positioned(
+              top: -20, right: -8,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(color: AppColors.gold, borderRadius: BorderRadius.circular(8)),
+                child: const Text('BEST', style: TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
 }
 
+// ─────────────────────────────────────────────
+//  STAT TILE
+// ─────────────────────────────────────────────
 class _StatTile extends StatelessWidget {
   final IconData icon;
   final Color iconColor, bgColor;
@@ -573,58 +487,43 @@ class _StatTile extends StatelessWidget {
   const _StatTile({required this.icon, required this.iconColor, required this.bgColor, required this.label, required this.value});
 
   @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-        decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.divider)),
-        child: Column(
-          children: [
-            Container(width: 36, height: 36, decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: iconColor, size: 18)),
-            const SizedBox(height: 8),
-            Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
-            const SizedBox(height: 2),
-            Text(label, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textSecondary, fontSize: 10)),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(16), border: Border.all(color: AppColors.divider)),
+      child: Column(children: [
+        Container(width: 36, height: 36, decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(10)), child: Icon(icon, color: iconColor, size: 18)),
+        const SizedBox(height: 8),
+        Text(value, style: const TextStyle(color: AppColors.textPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 2),
+        Text(label, textAlign: TextAlign.center, style: const TextStyle(color: AppColors.textSecondary, fontSize: 10)),
+      ]),
+    ),
+  );
 }
 
+// ─────────────────────────────────────────────
+//  SETTINGS ROW
+// ─────────────────────────────────────────────
 class _SettingsRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color iconColor, labelColor;
   final bool showChevron;
   final VoidCallback onTap;
-
-  const _SettingsRow({
-    required this.icon, required this.label, required this.onTap,
-    this.iconColor = AppColors.textSecondary,
-    this.labelColor = AppColors.textPrimary,
-    this.showChevron = true,
-  });
+  const _SettingsRow({required this.icon, required this.label, required this.onTap, this.iconColor = AppColors.textSecondary, this.labelColor = AppColors.textPrimary, this.showChevron = true});
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Container(
-              width: 32, height: 32,
-              decoration: BoxDecoration(color: iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(8)),
-              child: Icon(icon, color: iconColor, size: 17),
-            ),
-            const SizedBox(width: 12),
-            Expanded(child: Text(label, style: TextStyle(color: labelColor, fontSize: 14, fontWeight: FontWeight.w600))),
-            if (showChevron) const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      child: Row(children: [
+        Container(width: 32, height: 32, decoration: BoxDecoration(color: iconColor.withOpacity(0.12), borderRadius: BorderRadius.circular(8)), child: Icon(icon, color: iconColor, size: 17)),
+        const SizedBox(width: 12),
+        Expanded(child: Text(label, style: TextStyle(color: labelColor, fontSize: 14, fontWeight: FontWeight.w600))),
+        if (showChevron) const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary, size: 20),
+      ]),
+    ),
+  );
 }
